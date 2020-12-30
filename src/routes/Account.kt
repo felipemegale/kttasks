@@ -20,18 +20,20 @@ fun Route.accountRouting() {
         post("/signup") {
             val userInfo = call.receive<UserDto>()
 
-            if (!userInfo.validate())
+            if (!userInfo.validate()) {
                 return@post call.respond(
                     status = HttpStatusCode.BadRequest,
                     SignupErrorReturnDto("username or password invalid")
                 )
+            }
 
             val newUserId = accountService.signUserUp(userInfo)
 
-            var status = if (newUserId > 0)
+            val status = if (newUserId > 0) {
                 HttpStatusCode.Created
-            else
+            } else {
                 HttpStatusCode.BadRequest
+            }
 
             return@post call.respond(status = status, SignupReturnDto(newUserId))
         }

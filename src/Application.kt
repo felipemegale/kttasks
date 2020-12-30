@@ -39,5 +39,5 @@ fun Application.module(testing: Boolean = false) {
     }
     install(CallLogging) { }
 
-    registerAccountRouting()
+    registerAccountRouting(tokenService)
 }

@@ -2,6 +2,7 @@ package com.kttasks.routes
 
 import com.kttasks.dtos.*
 import com.kttasks.services.AccountService
+import com.kttasks.services.TokenService
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.http.*
@@ -9,9 +10,9 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 
-val accountService = AccountService()
+fun Route.accountRouting(tokenService: TokenService) {
+    val accountService = AccountService(tokenService)
 
-fun Route.accountRouting() {
     route("/account") {
         get {
             return@get call.respondText("Hello World", status = HttpStatusCode.OK)
@@ -27,7 +28,7 @@ fun Route.accountRouting() {
                 )
             }
 
-            val newUserId = accountService.signUserUp(userInfo)
+            val newUserId = accountService.signUp(userInfo)
 
             val status = if (newUserId > 0) {
                 HttpStatusCode.Created
@@ -40,19 +41,34 @@ fun Route.accountRouting() {
 
         post("/signin") {
             val userInfo = call.receive<UserDto>()
-            return@post call.respondText("Signin OK", status = HttpStatusCode.OK)
+            val token = accountService.signIn(userInfo)
+
+            if (token != null) {
+                return@post call.respond(status = HttpStatusCode.OK, SigninReturnDto(userInfo.username, token))
+            } else {
+                HttpStatusCode.BadRequest
+                return@post call.respond(
+                    status = HttpStatusCode.BadRequest,
+                    SigninErrorReturnDto("invalid username or password")
+                )
+            }
+
         }
 
         authenticate {
             patch("/updatepasswd") {
                 return@patch call.respondText("Update password OK", status = HttpStatusCode.OK)
             }
+
+            delete("/removeuser") {
+                return@delete call.respondText("Delete user OK", status = HttpStatusCode.OK)
+            }
         }
     }
 }
 
-fun Application.registerAccountRouting() {
+fun Application.registerAccountRouting(tokenService: TokenService) {
     routing {
-        accountRouting()
+        accountRouting(tokenService)
     }
 }

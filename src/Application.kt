@@ -1,5 +1,6 @@
 package com.kttasks
 
+import com.kttasks.models.ApplicationUser
 import com.kttasks.routes.registerAccountRouting
 import com.kttasks.services.TokenService
 import io.ktor.application.*
@@ -30,13 +31,23 @@ fun Application.module(testing: Boolean = false) {
     install(ContentNegotiation) {
         json()
     }
+
     install(Authentication) {
         jwt {
             realm = jwtRealm
             verifier(tokenService.buildJwtVerifier())
-            validate { credential -> tokenService.validateCredential(credential) }
+            validate {
+                val username = it.payload.getClaim("name").asString()
+                val password = it.payload.getClaim("password").asString()
+                if (username != null && password != null) {
+                    ApplicationUser(username, password)
+                } else {
+                    null
+                }
+            }
         }
     }
+
     install(CallLogging) { }
 
     registerAccountRouting(tokenService)

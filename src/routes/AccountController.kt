@@ -1,5 +1,6 @@
 package com.kttasks.routes
 
+import applicationUser
 import com.kttasks.dtos.*
 import com.kttasks.services.AccountService
 import com.kttasks.services.TokenService
@@ -56,6 +57,9 @@ fun Route.accountRouting(tokenService: TokenService) {
 
         authenticate {
             patch("/updatepasswd") {
+//                var newPassword = call.receive<NewPasswordDto>()
+                val username = call.applicationUser?.username
+                println(username)
                 return@patch call.respondText("Update password OK", status = HttpStatusCode.OK)
             }
 

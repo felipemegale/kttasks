@@ -4,8 +4,19 @@ import com.kttasks.dtos.UserDto
 import com.kttasks.repositories.UserRepository
 import org.mindrot.jbcrypt.BCrypt
 
-class AccountService(private val tokenService: TokenService) {
+class AccountService(private val tokenService: TokenService? = null) {
     private val userRepository = UserRepository()
+
+    fun validateClaims(userInfo: UserDto): Boolean {
+        val existingUser = userRepository.findUserByUsername(userInfo.username) ?: return false
+        val doPasswordsMatch = BCrypt.checkpw(userInfo.password, existingUser.hashedPassword)
+
+        if (!doPasswordsMatch) {
+            return false
+        }
+
+        return true
+    }
 
     fun signUp(userInfo: UserDto): Int {
         val existingUser = userRepository.findUserByUsername(userInfo.username)
@@ -28,6 +39,6 @@ class AccountService(private val tokenService: TokenService) {
             return null
         }
 
-        return tokenService.generateToken(userInfo)
+        return tokenService?.generateToken(userInfo)
     }
 }

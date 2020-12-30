@@ -12,16 +12,19 @@ class TokenService(private val issuer: String, private val audience: String, pri
     private fun getExpiresAt() = Date(System.currentTimeMillis() + this.expirationTime)
 
     fun buildJwtVerifier(): JWTVerifier = JWT.require(algorithm).withIssuer(this.issuer).build()
-    fun validateCredential(jwtCredential: JWTCredential) =
-        if (true) {
-            /*
-             * verificar se existe usuario com username ok
-             * jwtCredential.payload.getClaim("name")
-             */
-            JWTPrincipal(jwtCredential.payload)
-        } else {
-            null
+
+    fun validateCredential(jwtCredential: JWTCredential): JWTPrincipal? {
+        val name = jwtCredential.payload.getClaim("name").asString()
+        val password = jwtCredential.payload.getClaim("password").asString()
+        var userInfo = UserDto(name, password)
+
+        var areClaimsValid = AccountService().validateClaims(userInfo)
+
+        if (areClaimsValid) {
+            return JWTPrincipal(jwtCredential.payload)
         }
+        return null
+    }
 
     fun generateToken(userInfo: UserDto): String {
         return JWT.create()

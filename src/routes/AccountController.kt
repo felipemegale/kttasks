@@ -52,7 +52,6 @@ fun Route.accountRouting(tokenService: TokenService) {
                     SigninErrorReturnDto("invalid username or password")
                 )
             }
-
         }
 
         authenticate {

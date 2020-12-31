@@ -4,6 +4,8 @@ import applicationUser
 import com.kttasks.dtos.*
 import com.kttasks.services.AccountService
 import com.kttasks.services.TokenService
+import dtos.ErrorReturnDto
+import dtos.SuccessReturnDto
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.http.*
@@ -25,7 +27,7 @@ fun Route.accountRouting(tokenService: TokenService) {
             if (!userInfo.validate()) {
                 return@post call.respond(
                     status = HttpStatusCode.BadRequest,
-                    SignupErrorReturnDto("username or password invalid")
+                    ErrorReturnDto("username or password invalid")
                 )
             }
 
@@ -50,17 +52,30 @@ fun Route.accountRouting(tokenService: TokenService) {
                 HttpStatusCode.BadRequest
                 return@post call.respond(
                     status = HttpStatusCode.BadRequest,
-                    SigninErrorReturnDto("invalid username or password")
+                    ErrorReturnDto("invalid username or password")
                 )
             }
         }
 
         authenticate {
             patch("/updatepasswd") {
-//                var newPassword = call.receive<NewPasswordDto>()
-                val username = call.applicationUser?.username
-                println(username)
-                return@patch call.respondText("Update password OK", status = HttpStatusCode.OK)
+                var newPasswordDto = call.receive<NewPasswordDto>()
+                val username = call.applicationUser?.username ?: return@patch call.respond(
+                    status = HttpStatusCode.Unauthorized,
+                    ErrorReturnDto("unauthorized")
+                )
+
+                val userInfo = UserDto(username, newPasswordDto.newPassword)
+
+                val passwordDidUpdate = accountService.updatePassword(userInfo)
+
+                val status = if (passwordDidUpdate) {
+                    HttpStatusCode.OK
+                } else {
+                    HttpStatusCode.InternalServerError
+                }
+
+                return@patch call.respond(status = status, SuccessReturnDto("password updated successfully"))
             }
 
             delete("/removeuser") {

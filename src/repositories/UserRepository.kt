@@ -7,6 +7,7 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.mindrot.jbcrypt.BCrypt
 
 class UserRepository {
     constructor() {
@@ -38,5 +39,21 @@ class UserRepository {
         }
 
         return addedId
+    }
+
+    fun updatePassword(userInfo: UserDto): Boolean {
+        var didPasswordUpdateCompleteSuccessfully = false
+
+        transaction {
+            val userFromDb = UserDao.find {Users.username eq userInfo.username}.firstOrNull()
+
+            if (userFromDb != null) {
+                val newPasswordHash = BCrypt.hashpw(userInfo.password, BCrypt.gensalt(10))
+                userFromDb.hashedPassword = newPasswordHash
+                didPasswordUpdateCompleteSuccessfully = true
+            }
+        }
+
+        return didPasswordUpdateCompleteSuccessfully
     }
 }

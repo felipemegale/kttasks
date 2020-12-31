@@ -41,4 +41,8 @@ class AccountService(private val tokenService: TokenService? = null) {
 
         return tokenService?.generateToken(userInfo)
     }
+
+    fun updatePassword(userInfo: UserDto): Boolean {
+        return userRepository.updatePassword(userInfo)
+    }
 }

@@ -5,6 +5,7 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.Column
+import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.`java-time`.CurrentDateTime
 import org.jetbrains.exposed.sql.`java-time`.datetime
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
@@ -15,7 +16,7 @@ object Tasks : IntIdTable() {
     val description: Column<ExposedBlob> = blob("description")
     val dueDate: Column<LocalDateTime> = datetime("duedate")
     val completed: Column<Boolean> = bool("completed").default(false)
-    val user: Column<EntityID<Int>> = reference("user", Users)
+    val user: Column<EntityID<Int>> = reference("user", Users, onDelete = ReferenceOption.CASCADE)
     val createdAt: Column<LocalDateTime> = datetime("createdAt").defaultExpression(CurrentDateTime())
     val updatedAt: Column<LocalDateTime> = datetime("updatedAt")
 }

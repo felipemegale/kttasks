@@ -7,28 +7,17 @@ import org.mindrot.jbcrypt.BCrypt
 class AccountService(private val tokenService: TokenService? = null) {
     private val userRepository = UserRepository()
 
-    fun validateClaims(userInfo: UserDto): Boolean {
-        val existingUser = userRepository.findUserByUsername(userInfo.username) ?: return false
-        val doPasswordsMatch = BCrypt.checkpw(userInfo.password, existingUser.hashedPassword)
-
-        if (!doPasswordsMatch) {
-            return false
-        }
-
-        return true
-    }
-
     fun signUp(userInfo: UserDto): Int {
         val existingUser = userRepository.findUserByUsername(userInfo.username)
-        var status: Int = -1
 
-        if (existingUser == null) {
-            val hashedPassword = BCrypt.hashpw(userInfo.password, BCrypt.gensalt(10))
-            val newUser = UserDto(userInfo.username, hashedPassword)
-
-            status = userRepository.addNewUser(newUser)
+        if (existingUser != null) {
+            return -1
         }
-        return status
+
+        val hashedPassword = BCrypt.hashpw(userInfo.password, BCrypt.gensalt(10))
+        val newUser = UserDto(userInfo.username, hashedPassword)
+
+        return userRepository.addNewUser(newUser)
     }
 
     fun signIn(userInfo: UserDto): String? {

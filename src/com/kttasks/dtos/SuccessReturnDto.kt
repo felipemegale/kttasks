@@ -1,4 +1,4 @@
-package dtos
+package com.kttasks.dtos
 
 import kotlinx.serialization.Serializable
 

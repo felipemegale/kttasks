@@ -4,8 +4,8 @@ import applicationUser
 import com.kttasks.dtos.*
 import com.kttasks.services.AccountService
 import com.kttasks.services.TokenService
-import dtos.ErrorReturnDto
-import dtos.SuccessReturnDto
+import com.kttasks.dtos.ErrorReturnDto
+import com.kttasks.dtos.SuccessReturnDto
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.http.*

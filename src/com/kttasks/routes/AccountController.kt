@@ -33,13 +33,11 @@ fun Route.accountRouting(tokenService: TokenService) {
 
             val newUserId = accountService.signUp(userInfo)
 
-            val status = if (newUserId > 0) {
-                HttpStatusCode.Created
+            if (newUserId > 0) {
+                return@post call.respond(status = HttpStatusCode.Created, SignupReturnDto(newUserId))
             } else {
-                HttpStatusCode.BadRequest
+                return@post call.respond(status = HttpStatusCode.BadRequest, ErrorReturnDto("error creating user"))
             }
-
-            return@post call.respond(status = status, SignupReturnDto(newUserId))
         }
 
         post("/signin") {
@@ -49,7 +47,6 @@ fun Route.accountRouting(tokenService: TokenService) {
             if (token != null) {
                 return@post call.respond(status = HttpStatusCode.OK, SigninReturnDto(userInfo.username, token))
             } else {
-                HttpStatusCode.BadRequest
                 return@post call.respond(
                     status = HttpStatusCode.BadRequest,
                     ErrorReturnDto("invalid username or password")
@@ -69,17 +66,32 @@ fun Route.accountRouting(tokenService: TokenService) {
 
                 val passwordDidUpdate = accountService.updatePassword(userInfo)
 
-                val status = if (passwordDidUpdate) {
-                    HttpStatusCode.OK
+                if (passwordDidUpdate) {
+                    return@patch call.respond(
+                        status = HttpStatusCode.OK,
+                        SuccessReturnDto("password updated successfully")
+                    )
                 } else {
-                    HttpStatusCode.InternalServerError
+                    return@patch call.respond(
+                        status = HttpStatusCode.InternalServerError,
+                        ErrorReturnDto("error updating password")
+                    )
                 }
-
-                return@patch call.respond(status = status, SuccessReturnDto("password updated successfully"))
             }
 
             delete("/removeuser") {
-                return@delete call.respondText("Delete user OK", status = HttpStatusCode.OK)
+                val username = call.applicationUser?.username ?: return@delete call.respond(
+                    status = HttpStatusCode.Unauthorized,
+                    ErrorReturnDto("unauthorized")
+                )
+
+                val didRemoveUser = accountService.removeUser(username)
+
+                if (didRemoveUser) {
+                    return@delete call.respond(status = HttpStatusCode.OK, SuccessReturnDto("user removed successfully"))
+                } else {
+                    return@delete call.respond(status = HttpStatusCode.InternalServerError, ErrorReturnDto("error removing user"))
+                }
             }
         }
     }

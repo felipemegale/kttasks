@@ -56,4 +56,15 @@ class UserRepository {
 
         return didPasswordUpdateCompleteSuccessfully
     }
+
+    fun removeUser(username: String): Boolean {
+        var didRemoveUserSuccessfully = false
+
+        transaction {
+            UserDao.find { Users.username eq username }.firstOrNull()?.delete()
+            didRemoveUserSuccessfully = true
+        }
+
+        return didRemoveUserSuccessfully
+    }
 }

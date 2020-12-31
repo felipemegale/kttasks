@@ -34,4 +34,8 @@ class AccountService(private val tokenService: TokenService? = null) {
     fun updatePassword(userInfo: UserDto): Boolean {
         return userRepository.updatePassword(userInfo)
     }
+
+    fun removeUser(username: String): Boolean {
+        return userRepository.removeUser(username)
+    }
 }
